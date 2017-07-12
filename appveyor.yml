@@ -1,6 +1,5 @@
 cache:
   - C:\Users\appveyor\.cargo\registry
-  - target
 
 environment:
   global:

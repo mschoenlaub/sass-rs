@@ -40,7 +40,10 @@ environment:
       target: i686-pc-windows-gnu
       TOOLCHAIN: msys
       MSYS_BITS: 32
-      
+init:
+  - ps: dir "env:"
+  - git submodule update --init
+
 install:
 # Install rust, x86_64-pc-windows-msvc host
   - appveyor-retry appveyor DownloadFile https://win.rustup.rs/ -FileName rustup-init.exe
@@ -58,9 +61,6 @@ install:
   - where gcc rustc cargo
   - rustc -vV
   - cargo -vV
-
-  # Update included stuff
-  - git submodule update --init
   
 build: false
 

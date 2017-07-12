@@ -1,42 +1,60 @@
-cache:
-  - C:\Users\appveyor\.cargo\registry
+os: Visual Studio 2015
 
 environment:
-  global:
-    PROJECT_NAME: sass
+  PROJECT_NAME: sass
     
-  matrix:
-  
-  - TARGET: x86_64-pc-windows-gnu
-    MSYS_BITS: 64
-
-  # Ensure vanilla builds work
-  - TARGET: i686-pc-windows-msvc
-  - TARGET: x86_64-pc-windows-msvc
-
-  # Pin to specific VS versions to ensure the build works
-  - TARGET: x86_64-pc-windows-msvc
-    ARCH: amd64
-    VS: C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat
-  - TARGET: x86_64-pc-windows-msvc
-    ARCH: amd64
-    VS: C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat
-
+  matrix:  
+  # Stable 64-bit MSVC
+    - channel: stable
+      target: x86_64-pc-windows-msvc
+      TOOLCHAIN: msvc
+      PLATFORM: x86_64
+  # Stable 32-bit MSVC
+    - channel: stable
+      target: i686-pc-windows-msvc
+      TOOLCHAIN: msvc
+      PLATFORM: i686
+  # Nightly 64-bit MSVC
+    - channel: nightly
+      target: x86_64-pc-windows-msvc
+  # Nightly 32-bit MSVC
+    - channel: nightly
+      target: i686-pc-windows-msvc      
+  # Stable 64-bit GNU
+    - channel: stable
+      target: x86_64-pc-windows-gnu
+      TOOLCHAIN: msys
+      MSYS_BITS: 64
+  # Stable 32-bit GNU
+    - channel: stable
+      target: i686-pc-windows-gnu
+      TOOLCHAIN: msys
+      MSYS_BITS: 32
+  # Nightly 64-bit GNU
+    - channel: nightly
+      target: x86_64-pc-windows-gnu
+      TOOLCHAIN: msys
+      MSYS_BITS: 64
+  # Nightly 32-bit GNU
+    - channel: nightly
+      target: i686-pc-windows-gnu
+      TOOLCHAIN: msys
+      MSYS_BITS: 32
+      
+ matrix:
+  allow_failures:
+    - channel: nightly
+    
 install:
   # Install rust, x86_64-pc-windows-msvc host
   - appveyor-retry appveyor DownloadFile https://win.rustup.rs/ -FileName rustup-init.exe
   - rustup-init.exe -y --default-host x86_64-pc-windows-msvc
   - set PATH=%PATH%;C:\Users\appveyor\.cargo\bin
-
-  # Install the target we're compiling for
-  - if NOT "%TARGET%" == "x86_64-pc-windows-msvc" rustup target add %TARGET%
-
-  # Use the system msys if we can
-  - if defined MSYS_BITS set PATH=C:\msys64\mingw%MSYS_BITS%\bin;C:\msys64\usr\bin;%PATH%
-
-  # If we're pinning to a specific visual studio, do so now
-  - if defined VS call "%VS%" %ARCH%
-
+  - if "%TOOLCHAIN%" == "msvc" if "%PLATFORM%" == "i686" call "%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat"
+  - if "%TOOLCHAIN%" == "msvc" if "%PLATFORM%" == "x86_64" "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64
+  - if "%TOOLCHAIN%" == "msvc" if "%PLATFORM%" == "x86_64" call "%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat" x86_amd64
+  - if "%TOOLCHAIN%" == "msys" set PATH=C:\msys64\mingw%MSYS_BITS%\bin;C:\msys64\usr\bin;%PATH%
+  
   # let's see what we got
   - where gcc rustc cargo
   - rustc -vV
@@ -48,5 +66,4 @@ install:
 build: false
 
 test_script:
-  - cargo test --target %TARGET%
-  - cargo run --manifest-path systest/Cargo.toml --target %TARGET%
+  - cargo test --verbose

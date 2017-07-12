@@ -42,16 +42,15 @@ environment:
       MSYS_BITS: 32
 init:
   - ps: dir "env:"
-  - git submodule update --init
-
+  
 install:
 # Install rust, x86_64-pc-windows-msvc host
   - appveyor-retry appveyor DownloadFile https://win.rustup.rs/ -FileName rustup-init.exe
   - rustup-init.exe -y --default-host x86_64-pc-windows-msvc
   - set PATH=%PATH%;C:\Users\appveyor\.cargo\bin
-  - if "%TOOLCHAIN%" == "msvc" if "%PLATFORM%" == "i686" call "%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat"
-  - if "%TOOLCHAIN%" == "msvc" if "%PLATFORM%" == "x86_64" "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64
-  - if "%TOOLCHAIN%" == "msvc" if "%PLATFORM%" == "x86_64" call "%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat" x86_amd64
+  - git submodule update --init
+  - "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64
+  - call "%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat" x86_amd64
   - if "%TOOLCHAIN%" == "msys" set PATH=C:\msys64\mingw%MSYS_BITS%\bin;C:\msys64\usr\bin;%PATH%
 
 # Install the target we're compiling for

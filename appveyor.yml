@@ -41,10 +41,6 @@ environment:
       TOOLCHAIN: msys
       MSYS_BITS: 32
       
- matrix:
-  allow_failures:
-    - channel: nightly
-    
 install:
   # Install rust, x86_64-pc-windows-msvc host
   - appveyor-retry appveyor DownloadFile https://win.rustup.rs/ -FileName rustup-init.exe
